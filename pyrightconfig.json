@@ -1,0 +1,17 @@
+{
+  "exclude": [
+    "**/build",
+    "**/venv",
+    "**/dist"
+  ],
+  "venvPath": "dist/export/python/virtualenvs/pants-plugins/",
+  "venv": "3.9.16",
+  "executionEnvironments": [
+    {
+      "root": "pants-plugins",
+      "extraPaths": [
+        "dpdtk-core/src"
+      ]
+    }
+  ]
+}
