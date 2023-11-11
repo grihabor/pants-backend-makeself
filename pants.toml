@@ -3,9 +3,18 @@ pants_version = "2.17.0"
 pythonpath = ["%(buildroot)s/pants-plugins"]
 backend_packages = [
     "makeself.pants",
+    "pants.backend.python",
+    "pants.backend.plugin_development",
 ]
 
 [source]
 root_patterns = [
+    "/",
     "pants-plugins",
 ]
+
+[python]
+interpreter_constraints = ["CPython==3.11.*"]
+
+[python-infer]
+use_rust_parser = true
