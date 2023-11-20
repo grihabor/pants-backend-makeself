@@ -2,3 +2,5 @@
 .pids/
 *.pyc
 dist/
+*.dot
+*.svg

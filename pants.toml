@@ -2,11 +2,12 @@
 pants_version = "2.17.0"
 pythonpath = ["%(buildroot)s/pants-plugins"]
 backend_packages = [
-    "makeself.pants",
+    #"makeself.pants",
     "pants.backend.plugin_development",
     "pants.backend.python",
     "pants.backend.python.lint.black",
     "pants.backend.python.lint.isort",
+    "pants.backend.experimental.python.lint.ruff",
     "pants.backend.shell",
 ]
 
@@ -17,7 +18,7 @@ root_patterns = [
 ]
 
 [python]
-interpreter_constraints = ["CPython==3.11.*"]
+interpreter_constraints = [">=3.7,<3.10"]
 enable_resolves = true
 
 [python-infer]
@@ -25,17 +26,6 @@ use_rust_parser = true
 
 [python.resolves]
 python-default = "lockfiles/python-default.lock"
-pants-plugins = "lockfiles/pants-plugins.lock"
-
-[python.resolves_to_interpreter_constraints]
-# Pants can run with 3.7-3.9, so this lets us 
-# use different interpreter constraints when 
-# generating the lockfile than the rest of our project. 
-#
-# Warning: it's still necessary to set the `interpreter_constraints` 
-# field on each `python_sources` and `python_tests` target in 
-# our plugin! This only impacts how the lockfile is generated.
-pants-plugins = [">=3.7,<3.10"]
 
 [generate-lockfiles]
 diff = true

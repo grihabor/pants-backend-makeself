@@ -1,11 +1,10 @@
-from pants.backend.shell.target_types import ShellSourceField
-from pants.engine.target import Dependencies, Field, StringField, Target
+from pants.core.goals.package import OutputPathField
+from pants.engine.target import Dependencies, SingleSourceField, StringField, Target
 from pants.util.strutil import help_text
 
 
-class MakeselfBinaryStartupScript(StringField):
+class MakeselfBinaryStartupScript(SingleSourceField):
     alias = "startup_script"
-    default = None
     help = help_text(
         """
         Set the startup script, i.e. what gets run when executing `./my_binary.run`,
@@ -18,14 +17,19 @@ class MakeselfBinaryDependencies(Dependencies):
     pass
 
 
+class MakeselfBinaryOutputPath(OutputPathField):
+    pass
+
+
 class MakeselfBinaryTarget(Target):
     alias = "makeself_binary"
     core_fields = (
         MakeselfBinaryStartupScript,
-        MakeselfBinaryDependencies,
+        #MakeselfBinaryDependencies,
+        #MakeselfBinaryOutputPath,
     )
     help = help_text(
-        f"""
+        """
         Self-extractable archive on Unix using [makeself](https://github.com/megastep/makeself) tool.
         """
     )

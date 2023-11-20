@@ -4,23 +4,21 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 from typing import Mapping, Optional
 
+from pants.core.util_rules import external_tool
 from pants.core.util_rules.external_tool import (DownloadedExternalTool,
                                                  ExternalToolRequest,
                                                  TemplatedExternalTool)
-from pants.engine.env_vars import EnvironmentVars, EnvironmentVarsRequest
+from pants.engine import process
 from pants.engine.fs import EMPTY_DIGEST, Digest
 from pants.engine.platform import Platform
 from pants.engine.process import Process, ProcessCacheScope
 from pants.engine.rules import Get, collect_rules, rule
-from pants.option.option_types import StrOption
-from pants.option.subsystem import Subsystem
 from pants.util.frozendict import FrozenDict
 from pants.util.logging import LogLevel
 
 
 class MakeselfTool(TemplatedExternalTool):
     options_scope = "makeself"
-    name = "Makeself"
     help = "A tool to generate a self-extractable compressed tar archives."
 
     default_version = "2.5.0"
@@ -34,6 +32,7 @@ class MakeselfTool(TemplatedExternalTool):
     default_url_template = "https://github.com/megastep/makeself/releases/download/release-{version}/makeself-{version}.run"
 
 
+@dataclass(frozen=True)
 class MakeselfBinary:
     path: str
     immutable_input_digests: FrozenDict[str, Digest]
@@ -123,4 +122,4 @@ async def makeself_process(
 
 
 def rules():
-    return collect_rules()
+    return [*collect_rules(), *external_tool.rules(), *process.rules()]

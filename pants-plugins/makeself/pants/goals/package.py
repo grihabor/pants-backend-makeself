@@ -1,25 +1,32 @@
 import os
-from pants.core.goals.package import BuiltPackage, OutputPathField, PackageFieldSet
 from dataclasses import dataclass
-from pants.engine.addresses import Address, Addresses
-from pants.engine.fs import CreateDigest, Digest, Directory
-from pants.engine.process import ProcessResult
 
-from pants.engine.rules import Get, MultiGet, collect_rules, rule
-from pants.engine.target import (
-    Dependencies,
-    DependenciesRequest,
-    WrappedTarget,
-    WrappedTargetRequest,
-)
-from pants.engine.unions import UnionRule
-from pants.util.logging import LogLevel
-from makeself.pants.makeself import MakeselfProcess, MakeselfTool
+from pants.core.util_rules.environments import EnvironmentName
 
+from makeself.pants.makeself import MakeselfBinary, MakeselfProcess
 from makeself.pants.target_types import (
     MakeselfBinaryDependencies,
+    MakeselfBinaryOutputPath,
     MakeselfBinaryStartupScript,
 )
+from pants.core.goals.package import BuiltPackage, BuiltPackageArtifact, PackageFieldSet
+from pants.core.goals.package import BuiltPackage, BuiltPackageArtifact, PackageFieldSet
+from pants.engine.addresses import Address, Addresses
+from pants.engine.process import ProcessResult
+from pants.engine.rules import Get, MultiGet, collect_rules, rule
+from pants.engine.target import DependenciesRequest
+from pants.engine.unions import UnionRule
+from pants.util.logging import LogLevel
+
+
+@dataclass(frozen=True)
+class BuiltMakeselfArtifact(BuiltPackageArtifact):
+    @classmethod
+    def create(cls, relpath: str) -> "BuiltMakeselfArtifact":
+        return cls(
+            relpath=relpath,
+            extra_log_lines=(f"Built Makeself chart artifact: {relpath}",),
+        )
 
 
 @dataclass(frozen=True)
@@ -27,15 +34,18 @@ class MakeselfPackageFieldSet(PackageFieldSet):
     required_fields = (MakeselfBinaryStartupScript,)
 
     startup_script: MakeselfBinaryStartupScript
-    dependencies: MakeselfBinaryDependencies
+    #dependencies: MakeselfBinaryDependencies
+    output_path: MakeselfBinaryOutputPath
 
 
-@rule(desc="Package self-extractable archive", level=LogLevel.INFO)
+@rule#(desc="Package self-extractable archive", level=LogLevel.INFO)
 async def package_makeself_binary(
     field_set: MakeselfPackageFieldSet,
-    tool: MakeselfTool,
+    tool: MakeselfBinary,
+    #_: EnvironmentName,
 ) -> BuiltPackage:
     result_dir = "__out"
+    raise RuntimeError
 
     startup_script, dependencies = await MultiGet(
         Get(Address, field_set.startup_script),
@@ -47,7 +57,7 @@ async def package_makeself_binary(
     )
 
     dependencies[0].target_name
-    process_result = await Get(
+    await Get(
         ProcessResult,
         MakeselfProcess(
             argv=[archive_dir, file_name, label, startup_script],
@@ -60,7 +70,7 @@ async def package_makeself_binary(
     return BuiltPackage(
         final_snapshot.digest,
         artifacts=tuple(
-            BuiltHelmArtifact.create(file, chart.info) for file in final_snapshot.files
+            BuiltMakeselfArtifact.create(file) for file in final_snapshot.files
         ),
     )
 
