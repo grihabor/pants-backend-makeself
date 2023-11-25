@@ -2,13 +2,13 @@
 pants_version = "2.17.0"
 pythonpath = ["%(buildroot)s/pants-plugins"]
 backend_packages = [
-    #"makeself.pants",
-    "pants.backend.plugin_development",
-    "pants.backend.python",
-    "pants.backend.python.lint.black",
-    "pants.backend.python.lint.isort",
-    "pants.backend.experimental.python.lint.ruff",
-    "pants.backend.shell",
+    "makeself.pants",
+    #"pants.backend.plugin_development",
+    #"pants.backend.python",
+    #"pants.backend.python.lint.black",
+    #"pants.backend.python.lint.isort",
+    #"pants.backend.experimental.python.lint.ruff",
+    #"pants.backend.shell",
 ]
 
 [source]

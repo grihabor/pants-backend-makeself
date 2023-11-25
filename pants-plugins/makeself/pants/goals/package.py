@@ -34,18 +34,18 @@ class MakeselfPackageFieldSet(PackageFieldSet):
     required_fields = (MakeselfBinaryStartupScript,)
 
     startup_script: MakeselfBinaryStartupScript
-    #dependencies: MakeselfBinaryDependencies
-    output_path: MakeselfBinaryOutputPath
+    # dependencies: MakeselfBinaryDependencies
+    # output_path: MakeselfBinaryOutputPath
 
 
-@rule#(desc="Package self-extractable archive", level=LogLevel.INFO)
+@rule(desc="Package self-extractable archive", level=LogLevel.INFO)
 async def package_makeself_binary(
     field_set: MakeselfPackageFieldSet,
-    tool: MakeselfBinary,
-    #_: EnvironmentName,
+    #tool: MakeselfBinary,
+    # _: EnvironmentName,
 ) -> BuiltPackage:
     result_dir = "__out"
-    raise RuntimeError
+    # raise RuntimeError("")
 
     startup_script, dependencies = await MultiGet(
         Get(Address, field_set.startup_script),

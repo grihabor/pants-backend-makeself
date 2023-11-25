@@ -5,9 +5,11 @@ from dataclasses import dataclass
 from typing import Mapping, Optional
 
 from pants.core.util_rules import external_tool
-from pants.core.util_rules.external_tool import (DownloadedExternalTool,
-                                                 ExternalToolRequest,
-                                                 TemplatedExternalTool)
+from pants.core.util_rules.external_tool import (
+    DownloadedExternalTool,
+    ExternalToolRequest,
+    TemplatedExternalTool,
+)
 from pants.engine import process
 from pants.engine.fs import EMPTY_DIGEST, Digest
 from pants.engine.platform import Platform
@@ -37,17 +39,6 @@ class MakeselfBinary:
     path: str
     immutable_input_digests: FrozenDict[str, Digest]
 
-    def __init__(
-        self,
-        path: str,
-        *,
-        immutable_input_digests: Mapping[str, Digest],
-    ) -> None:
-        object.__setattr__(self, "path", path)
-        object.__setattr__(
-            self, "immutable_input_digests", FrozenDict(immutable_input_digests)
-        )
-
 
 @rule(desc="Download and configure Makeself", level=LogLevel.DEBUG)
 async def setup_makeself(
@@ -63,7 +54,7 @@ async def setup_makeself(
     immutable_input_digests = {tool_relpath: downloaded_binary.digest}
     return MakeselfBinary(
         path=makeself_path,
-        immutable_input_digests=immutable_input_digests,
+        immutable_input_digests=FrozenDict(immutable_input_digests),
     )
 
 
@@ -122,4 +113,8 @@ async def makeself_process(
 
 
 def rules():
-    return [*collect_rules(), *external_tool.rules(), *process.rules()]
+    return [
+        *collect_rules(),
+        *external_tool.rules(),
+        *process.rules(),
+    ]

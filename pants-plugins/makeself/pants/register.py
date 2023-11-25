@@ -10,5 +10,5 @@ def target_types():
 def rules():
     return [
         *package.rules(),
-        *makeself.rules(),
+        #*makeself.rules(),
     ]
