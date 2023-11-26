@@ -18,8 +18,10 @@ from pants.engine.rules import Get, collect_rules, rule
 from pants.util.frozendict import FrozenDict
 from pants.util.logging import LogLevel
 
+from makeself.pants.target_types import MakeselfBinaryDependencies
 
-class MakeselfTool(TemplatedExternalTool):
+
+class MakeselfSubsystem(TemplatedExternalTool):
     options_scope = "makeself"
     help = "A tool to generate a self-extractable compressed tar archives."
 
@@ -34,28 +36,20 @@ class MakeselfTool(TemplatedExternalTool):
     default_url_template = "https://github.com/megastep/makeself/releases/download/release-{version}/makeself-{version}.run"
 
 
-@dataclass(frozen=True)
-class MakeselfBinary:
-    path: str
-    immutable_input_digests: FrozenDict[str, Digest]
+class MakeselfBinary(DownloadedExternalTool):
+    """The Makeself binary."""
 
 
-@rule(desc="Download and configure Makeself", level=LogLevel.DEBUG)
-async def setup_makeself(
-    makeself_tool: MakeselfTool, platform: Platform
+@rule(desc="Download Makeself binary", level=LogLevel.DEBUG)
+async def download_makeself(
+    options: MakeselfSubsystem, platform: Platform
 ) -> MakeselfBinary:
-    downloaded_binary = await Get(
+    binary = await Get(
         DownloadedExternalTool,
         ExternalToolRequest,
-        makeself_tool.get_request(platform),
+        options.get_request(platform),
     )
-    tool_relpath = "__makeself"
-    makeself_path = os.path.join(tool_relpath, downloaded_binary.exe)
-    immutable_input_digests = {tool_relpath: downloaded_binary.digest}
-    return MakeselfBinary(
-        path=makeself_path,
-        immutable_input_digests=FrozenDict(immutable_input_digests),
-    )
+    return MakeselfBinary(digest=binary.digest, exe=binary.exe)
 
 
 @dataclass(frozen=True)
@@ -69,8 +63,9 @@ class MakeselfProcess:
     output_directories: tuple[str, ...]
     output_files: tuple[str, ...]
 
-    def __init__(
-        self,
+    @classmethod
+    def from_(
+        cls,
         argv: Iterable[str],
         *,
         description: str,
@@ -81,26 +76,28 @@ class MakeselfProcess:
         cache_scope: Optional[ProcessCacheScope] = None,
         timeout_seconds: Optional[int] = None,
     ):
-        object.__setattr__(self, "argv", tuple(argv))
-        object.__setattr__(self, "input_digest", input_digest)
-        object.__setattr__(self, "description", description)
-        object.__setattr__(self, "level", level)
-        object.__setattr__(self, "output_directories", tuple(output_directories or ()))
-        object.__setattr__(self, "output_files", tuple(output_files or ()))
-        object.__setattr__(self, "cache_scope", cache_scope)
-        object.__setattr__(self, "timeout_seconds", timeout_seconds)
+        return MakeselfProcess(
+            argv=tuple(argv),
+            input_digest=input_digest,
+            description=description,
+            level=level,
+            output_directories=tuple(output_directories or ()),
+            output_files=tuple(output_files or ()),
+            cache_scope=cache_scope,
+            timeout_seconds=timeout_seconds,
+        )
 
 
 @rule
 async def makeself_process(
     request: MakeselfProcess,
-    makeself_binary: MakeselfBinary,
+    binary: MakeselfBinary,
 ) -> Process:
-    argv = [makeself_binary.path, *request.argv]
+    argv = [binary.path, *request.argv]
     return Process(
         argv,
         input_digest=request.input_digest,
-        immutable_input_digests=makeself_binary.immutable_input_digests,
+        immutable_input_digests=binary.immutable_input_digests,
         env={},
         description=request.description,
         level=request.level,
@@ -116,5 +113,4 @@ def rules():
     return [
         *collect_rules(),
         *external_tool.rules(),
-        *process.rules(),
     ]

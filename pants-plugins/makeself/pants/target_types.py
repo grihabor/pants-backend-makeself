@@ -6,7 +6,6 @@ from typing import Tuple
 
 class MakeselfBinaryStartupScript(SingleSourceField):
     alias = "startup_script"
-    expected_file_extensions: Tuple[str, ...] = (".yml", ".yaml")
     help = help_text(
         """
         Set the startup script, i.e. what gets run when executing `./my_binary.run`,
@@ -27,8 +26,8 @@ class MakeselfBinaryTarget(Target):
     alias = "makeself_binary"
     core_fields = (
         MakeselfBinaryStartupScript,
-        # MakeselfBinaryDependencies,
-        # MakeselfBinaryOutputPath,
+        MakeselfBinaryDependencies,
+        MakeselfBinaryOutputPath,
     )
     help = help_text(
         """
