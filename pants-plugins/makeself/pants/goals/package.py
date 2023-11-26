@@ -2,34 +2,17 @@ import logging
 import os.path
 from dataclasses import dataclass
 
-from pants.core.goals.package import BuiltPackage, BuiltPackageArtifact, PackageFieldSet
-from pants.core.util_rules.external_tool import (
-    DownloadedExternalTool,
-    ExternalToolRequest,
-)
+from makeself.pants.makeself import MakeselfProcess
+from makeself.pants.target_types import (MakeselfBinaryDependencies,
+                                         MakeselfBinaryStartupScript)
+from pants.core.goals.package import (BuiltPackage, BuiltPackageArtifact,
+                                      PackageFieldSet)
 from pants.core.util_rules.source_files import SourceFiles, SourceFilesRequest
-from pants.engine.addresses import Address, Addresses
-from pants.engine.env_vars import EnvironmentVars, EnvironmentVarsRequest
-from pants.engine.fs import CreateDigest, Digest, DigestContents, Directory, FileContent
+from pants.engine.fs import CreateDigest, Digest, Directory
 from pants.engine.internals.native_engine import AddPrefix, Snapshot
-from pants.engine.platform import Platform
-from pants.engine.process import Process, ProcessResult
+from pants.engine.process import ProcessResult
 from pants.engine.rules import Get, MultiGet, collect_rules, rule
-from pants.engine.target import (
-    Dependencies,
-    DependenciesRequest,
-    SourcesPaths,
-    SourcesPathsRequest,
-    Targets,
-)
 from pants.engine.unions import UnionRule
-from pants.util.frozendict import FrozenDict
-from makeself.pants.makeself import MakeselfBinary, MakeselfProcess
-
-from makeself.pants.target_types import (
-    MakeselfBinaryDependencies,
-    MakeselfBinaryStartupScript,
-)
 
 logger = logging.getLogger(__name__)
 
@@ -72,7 +55,7 @@ async def package_makeself_binary(
     result = await Get(
         ProcessResult,
         MakeselfProcess,
-        MakeselfProcess.from_(
+        MakeselfProcess.new(
             argv=[
                 archive_dir,
                 output_filename,

@@ -1,7 +1,6 @@
 from pants.core.goals.package import OutputPathField
-from pants.engine.target import Dependencies, SingleSourceField, StringField, Target
+from pants.engine.target import Dependencies, SingleSourceField, Target
 from pants.util.strutil import help_text
-from typing import Tuple
 
 
 class MakeselfBinaryStartupScript(SingleSourceField):
