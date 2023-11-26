@@ -3,10 +3,11 @@ import os.path
 from dataclasses import dataclass
 
 from makeself.pants.makeself import MakeselfProcess
-from makeself.pants.target_types import (MakeselfBinaryDependencies,
-                                         MakeselfBinaryStartupScript)
-from pants.core.goals.package import (BuiltPackage, BuiltPackageArtifact,
-                                      PackageFieldSet)
+from makeself.pants.target_types import (
+    MakeselfBinaryDependencies,
+    MakeselfBinaryStartupScript,
+)
+from pants.core.goals.package import BuiltPackage, BuiltPackageArtifact, PackageFieldSet
 from pants.core.util_rules.source_files import SourceFiles, SourceFilesRequest
 from pants.engine.fs import CreateDigest, Digest, Directory
 from pants.engine.internals.native_engine import AddPrefix, Snapshot

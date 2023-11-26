@@ -29,3 +29,6 @@ python-default = "lockfiles/python-default.lock"
 
 [generate-lockfiles]
 diff = true
+
+[isort]
+args=["--profile", "black"]

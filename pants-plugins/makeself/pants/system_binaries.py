@@ -1,6 +1,9 @@
-from pants.core.util_rules.system_binaries import (SEARCH_PATHS, BinaryPath,
-                                                   BinaryPathRequest,
-                                                   BinaryPaths)
+from pants.core.util_rules.system_binaries import (
+    SEARCH_PATHS,
+    BinaryPath,
+    BinaryPathRequest,
+    BinaryPaths,
+)
 from pants.engine.rules import Get, collect_rules, rule
 from pants.util.logging import LogLevel
 
@@ -58,6 +61,10 @@ class FindBinary(BinaryPath):
 
 
 class Md5sumBinary(BinaryPath):
+    pass
+
+
+class DdBinary(BinaryPath):
     pass
 
 
@@ -171,6 +178,14 @@ async def find_md5sum() -> Md5sumBinary:
     paths = await Get(BinaryPaths, BinaryPathRequest, request)
     first_path = paths.first_path_or_raise(request, rationale="md5sum file")
     return Md5sumBinary(first_path.path, first_path.fingerprint)
+
+
+@rule(desc="Finding the `dd` binary", level=LogLevel.DEBUG)
+async def find_dd() -> DdBinary:
+    request = BinaryPathRequest(binary_name="dd", search_path=SEARCH_PATHS)
+    paths = await Get(BinaryPaths, BinaryPathRequest, request)
+    first_path = paths.first_path_or_raise(request, rationale="dd file")
+    return DdBinary(first_path.path, first_path.fingerprint)
 
 
 def rules():

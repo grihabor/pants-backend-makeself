@@ -1,8 +1,7 @@
 import os
 
 import pytest
-from makeself.pants.goals.package import (BuiltMakeselfArtifact,
-                                          MakeselfPackageFieldSet)
+from makeself.pants.goals.package import BuiltMakeselfArtifact, MakeselfPackageFieldSet
 from makeself.pants.goals.package import rules as makeself_package_rules
 from makeself.pants.makeself import MakeselfBinary
 from makeself.pants.makeself import rules as makeself_rules

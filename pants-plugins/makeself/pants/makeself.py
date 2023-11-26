@@ -4,18 +4,36 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 from typing import Optional
 
-from makeself.pants.system_binaries import (AwkBinary, BasenameBinary,
-                                            CutBinary, DfBinary, DirnameBinary,
-                                            ExprBinary, FindBinary, GzipBinary,
-                                            HeadBinary, IdBinary, Md5sumBinary,
-                                            SedBinary, TailBinary, WcBinary)
+from makeself.pants.system_binaries import (
+    AwkBinary,
+    BasenameBinary,
+    CutBinary,
+    DdBinary,
+    DfBinary,
+    DirnameBinary,
+    ExprBinary,
+    FindBinary,
+    GzipBinary,
+    HeadBinary,
+    IdBinary,
+    Md5sumBinary,
+    SedBinary,
+    TailBinary,
+    WcBinary,
+)
 from pants.core.util_rules import external_tool
-from pants.core.util_rules.external_tool import (DownloadedExternalTool,
-                                                 ExternalToolRequest,
-                                                 TemplatedExternalTool)
-from pants.core.util_rules.system_binaries import (BashBinary, BinaryShims,
-                                                   BinaryShimsRequest,
-                                                   CatBinary, MkdirBinary)
+from pants.core.util_rules.external_tool import (
+    DownloadedExternalTool,
+    ExternalToolRequest,
+    TemplatedExternalTool,
+)
+from pants.core.util_rules.system_binaries import (
+    BashBinary,
+    BinaryShims,
+    BinaryShimsRequest,
+    CatBinary,
+    MkdirBinary,
+)
 from pants.engine.fs import EMPTY_DIGEST, Digest, MergeDigests
 from pants.engine.platform import Platform
 from pants.engine.process import Process, ProcessCacheScope, ProcessResult
@@ -70,18 +88,19 @@ async def extract_makeself_binary(
     bash: BashBinary,
     cat: CatBinary,
     cut: CutBinary,
+    dd: DdBinary,
     df: DfBinary,
     dirname: DirnameBinary,
     expr: ExprBinary,
+    find: FindBinary,
     gzip: GzipBinary,
     head: HeadBinary,
     id: IdBinary,
+    md5sum: Md5sumBinary,
     mkdir: MkdirBinary,
     sed: SedBinary,
     tail: TailBinary,
     wc: WcBinary,
-    find: FindBinary,
-    md5sum: Md5sumBinary,
 ) -> MakeselfBinary:
     out = "__makeself"
     shims = await Get(
@@ -93,18 +112,19 @@ async def extract_makeself_binary(
                 bash,
                 cat,
                 cut,
+                dd,
                 df,
                 dirname,
                 expr,
+                find,
                 gzip,
                 head,
                 id,
+                md5sum,
                 mkdir,
                 sed,
                 tail,
                 wc,
-                find,
-                md5sum,
             ),
             rationale="execute makeself script",
         ),
@@ -113,19 +133,22 @@ async def extract_makeself_binary(
     result = await Get(
         ProcessResult,
         Process(
-            argv=[bash.path, "-c", f"md5sum {dist.exe}; {dist.exe} --check"],
-            # [
-            #    dist.exe,
-            #    "--nox11",
-            #    "--nochown",
-            #    "--target",
-            #    out,
-            # ],
+            # argv=["echo", "hey"],
+            # [bash.path, "-c", f"md5sum {dist.exe}; {dist.exe} --check"],
+            [
+                dist.exe,
+                "--noprogress",
+                "--nox11",
+                "--nochown",
+                "--target",
+                out,
+            ],
             # [
             # bash.path,
             # "-c",
             # f"find {out}; {dist.exe} --check; {dist.exe} --nox11 --nochown --target {out}",
             # ]
+            env={"TMPDIR": "tmp/"},
             input_digest=digest,
             output_directories=[out],
             description=f"Extracting Makeself binary: {out}",
