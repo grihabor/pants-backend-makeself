@@ -68,6 +68,14 @@ class DdBinary(BinaryPath):
     pass
 
 
+class TestBinary(BinaryPath):
+    pass
+
+
+class PwdBinary(BinaryPath):
+    pass
+
+
 @rule(desc="Finding the `dirname` binary", level=LogLevel.DEBUG)
 async def find_dirname() -> DirnameBinary:
     request = BinaryPathRequest(binary_name="dirname", search_path=SEARCH_PATHS)
@@ -186,6 +194,22 @@ async def find_dd() -> DdBinary:
     paths = await Get(BinaryPaths, BinaryPathRequest, request)
     first_path = paths.first_path_or_raise(request, rationale="dd file")
     return DdBinary(first_path.path, first_path.fingerprint)
+
+
+@rule(desc="Finding the `test` binary", level=LogLevel.DEBUG)
+async def find_test() -> TestBinary:
+    request = BinaryPathRequest(binary_name="test", search_path=SEARCH_PATHS)
+    paths = await Get(BinaryPaths, BinaryPathRequest, request)
+    first_path = paths.first_path_or_raise(request, rationale="test file")
+    return TestBinary(first_path.path, first_path.fingerprint)
+
+
+@rule(desc="Finding the `pwd` binary", level=LogLevel.DEBUG)
+async def find_pwd() -> PwdBinary:
+    request = BinaryPathRequest(binary_name="pwd", search_path=SEARCH_PATHS)
+    paths = await Get(BinaryPaths, BinaryPathRequest, request)
+    first_path = paths.first_path_or_raise(request, rationale="pwd file")
+    return PwdBinary(first_path.path, first_path.fingerprint)
 
 
 def rules():

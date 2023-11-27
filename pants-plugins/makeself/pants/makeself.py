@@ -17,8 +17,10 @@ from makeself.pants.system_binaries import (
     HeadBinary,
     IdBinary,
     Md5sumBinary,
+    PwdBinary,
     SedBinary,
     TailBinary,
+    TestBinary,
     WcBinary,
 )
 from pants.core.util_rules import external_tool
@@ -33,6 +35,7 @@ from pants.core.util_rules.system_binaries import (
     BinaryShimsRequest,
     CatBinary,
     MkdirBinary,
+    TarBinary,
 )
 from pants.engine.fs import EMPTY_DIGEST, Digest, MergeDigests
 from pants.engine.platform import Platform
@@ -101,6 +104,9 @@ async def extract_makeself_binary(
     sed: SedBinary,
     tail: TailBinary,
     wc: WcBinary,
+    tar: TarBinary,
+    test: TestBinary,
+    pwd: PwdBinary,
 ) -> MakeselfBinary:
     out = "__makeself"
     shims = await Get(
@@ -122,33 +128,32 @@ async def extract_makeself_binary(
                 id,
                 md5sum,
                 mkdir,
+                pwd,
                 sed,
                 tail,
+                tar,
+                test,
                 wc,
             ),
             rationale="execute makeself script",
         ),
     )
     digest = await Get(Digest, MergeDigests([dist.digest, shims.digest]))
+    argv = [
+        dist.exe,
+        "--accept",
+        "--noprogress",
+        "--nox11",
+        "--nochown",
+        "--nodiskspace",
+        "--keep",
+        "--target",
+        out,
+    ]
     result = await Get(
         ProcessResult,
         Process(
-            # argv=["echo", "hey"],
-            # [bash.path, "-c", f"md5sum {dist.exe}; {dist.exe} --check"],
-            [
-                dist.exe,
-                "--noprogress",
-                "--nox11",
-                "--nochown",
-                "--target",
-                out,
-            ],
-            # [
-            # bash.path,
-            # "-c",
-            # f"find {out}; {dist.exe} --check; {dist.exe} --nox11 --nochown --target {out}",
-            # ]
-            env={"TMPDIR": "tmp/"},
+            [bash.path, "-c", "pwd;" + " ".join(argv)],
             input_digest=digest,
             output_directories=[out],
             description=f"Extracting Makeself binary: {out}",
