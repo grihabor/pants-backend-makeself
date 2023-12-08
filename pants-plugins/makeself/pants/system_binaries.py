@@ -76,6 +76,38 @@ class PwdBinary(BinaryPath):
     pass
 
 
+class XzBinary(BinaryPath):
+    pass
+
+
+class GpgBinary(BinaryPath):
+    pass
+
+
+class Base64Binary(BinaryPath):
+    pass
+
+
+class Bzip2Binary(BinaryPath):
+    pass
+
+
+class Bzip3Binary(BinaryPath):
+    pass
+
+
+class Lz4Binary(BinaryPath):
+    pass
+
+
+class LzopBinary(BinaryPath):
+    pass
+
+
+class ZstdBinary(BinaryPath):
+    pass
+
+
 @rule(desc="Finding the `dirname` binary", level=LogLevel.DEBUG)
 async def find_dirname() -> DirnameBinary:
     request = BinaryPathRequest(binary_name="dirname", search_path=SEARCH_PATHS)
@@ -210,6 +242,70 @@ async def find_pwd() -> PwdBinary:
     paths = await Get(BinaryPaths, BinaryPathRequest, request)
     first_path = paths.first_path_or_raise(request, rationale="pwd file")
     return PwdBinary(first_path.path, first_path.fingerprint)
+
+
+@rule(desc="Finding the `xz` binary", level=LogLevel.DEBUG)
+async def find_xz() -> XzBinary:
+    request = BinaryPathRequest(binary_name="xz", search_path=SEARCH_PATHS)
+    paths = await Get(BinaryPaths, BinaryPathRequest, request)
+    first_path = paths.first_path_or_raise(request, rationale="xz file")
+    return XzBinary(first_path.path, first_path.fingerprint)
+
+
+@rule(desc="Finding the `gpg` binary", level=LogLevel.DEBUG)
+async def find_gpg() -> GpgBinary:
+    request = BinaryPathRequest(binary_name="gpg", search_path=SEARCH_PATHS)
+    paths = await Get(BinaryPaths, BinaryPathRequest, request)
+    first_path = paths.first_path_or_raise(request, rationale="gpg file")
+    return GpgBinary(first_path.path, first_path.fingerprint)
+
+
+@rule(desc="Finding the `base64` binary", level=LogLevel.DEBUG)
+async def find_base64() -> Base64Binary:
+    request = BinaryPathRequest(binary_name="base64", search_path=SEARCH_PATHS)
+    paths = await Get(BinaryPaths, BinaryPathRequest, request)
+    first_path = paths.first_path_or_raise(request, rationale="base64 file")
+    return Base64Binary(first_path.path, first_path.fingerprint)
+
+
+@rule(desc="Finding the `bzip2` binary", level=LogLevel.DEBUG)
+async def find_bzip2() -> Bzip2Binary:
+    request = BinaryPathRequest(binary_name="bzip2", search_path=SEARCH_PATHS)
+    paths = await Get(BinaryPaths, BinaryPathRequest, request)
+    first_path = paths.first_path_or_raise(request, rationale="bzip2 file")
+    return Bzip2Binary(first_path.path, first_path.fingerprint)
+
+
+@rule(desc="Finding the `bzip3` binary", level=LogLevel.DEBUG)
+async def find_bzip3() -> Bzip3Binary:
+    request = BinaryPathRequest(binary_name="bzip3", search_path=SEARCH_PATHS)
+    paths = await Get(BinaryPaths, BinaryPathRequest, request)
+    first_path = paths.first_path_or_raise(request, rationale="bzip3 file")
+    return Bzip3Binary(first_path.path, first_path.fingerprint)
+
+
+@rule(desc="Finding the `lz4` binary", level=LogLevel.DEBUG)
+async def find_lz4() -> Lz4Binary:
+    request = BinaryPathRequest(binary_name="lz4", search_path=SEARCH_PATHS)
+    paths = await Get(BinaryPaths, BinaryPathRequest, request)
+    first_path = paths.first_path_or_raise(request, rationale="lz4 file")
+    return Lz4Binary(first_path.path, first_path.fingerprint)
+
+
+@rule(desc="Finding the `lzop` binary", level=LogLevel.DEBUG)
+async def find_lzop() -> LzopBinary:
+    request = BinaryPathRequest(binary_name="lzop", search_path=SEARCH_PATHS)
+    paths = await Get(BinaryPaths, BinaryPathRequest, request)
+    first_path = paths.first_path_or_raise(request, rationale="lzop file")
+    return LzopBinary(first_path.path, first_path.fingerprint)
+
+
+@rule(desc="Finding the `zstd` binary", level=LogLevel.DEBUG)
+async def find_zstd() -> ZstdBinary:
+    request = BinaryPathRequest(binary_name="zstd", search_path=SEARCH_PATHS)
+    paths = await Get(BinaryPaths, BinaryPathRequest, request)
+    first_path = paths.first_path_or_raise(request, rationale="zstd file")
+    return ZstdBinary(first_path.path, first_path.fingerprint)
 
 
 def rules():

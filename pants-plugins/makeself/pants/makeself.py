@@ -6,13 +6,16 @@ from typing import Optional
 
 from makeself.pants.system_binaries import (
     AwkBinary,
+    Base64Binary,
     BasenameBinary,
+    Bzip2Binary,
     CutBinary,
     DdBinary,
     DfBinary,
     DirnameBinary,
     ExprBinary,
     FindBinary,
+    GpgBinary,
     GzipBinary,
     HeadBinary,
     IdBinary,
@@ -22,6 +25,8 @@ from makeself.pants.system_binaries import (
     TailBinary,
     TestBinary,
     WcBinary,
+    XzBinary,
+    ZstdBinary,
 )
 from pants.core.util_rules import external_tool
 from pants.core.util_rules.external_tool import (
@@ -107,6 +112,14 @@ async def extract_makeself_binary(
     tar: TarBinary,
     test: TestBinary,
     pwd: PwdBinary,
+    xz: XzBinary,
+    gpg: GpgBinary,
+    base64: Base64Binary,
+    bzip2: Bzip2Binary,
+    # bzip3: Bzip3Binary,
+    # lz4: Lz4Binary,
+    # lzop: LzopBinary,
+    zstd: ZstdBinary,
 ) -> MakeselfBinary:
     out = "__makeself"
     shims = await Get(
@@ -114,8 +127,11 @@ async def extract_makeself_binary(
         BinaryShimsRequest(
             paths=(
                 awk,
+                base64,
                 basename,
                 bash,
+                bzip2,
+                # bzip3,
                 cat,
                 cut,
                 dd,
@@ -123,9 +139,12 @@ async def extract_makeself_binary(
                 dirname,
                 expr,
                 find,
+                gpg,
                 gzip,
                 head,
                 id,
+                # lz4,
+                # lzop,
                 md5sum,
                 mkdir,
                 pwd,
@@ -134,6 +153,8 @@ async def extract_makeself_binary(
                 tar,
                 test,
                 wc,
+                xz,
+                zstd,
             ),
             rationale="execute makeself script",
         ),
