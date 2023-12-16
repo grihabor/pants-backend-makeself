@@ -22,6 +22,7 @@ from makeself.pants.system_binaries import (
     Md5sumBinary,
     PwdBinary,
     SedBinary,
+    ShasumBinary,
     TailBinary,
     TestBinary,
     WcBinary,
@@ -120,18 +121,21 @@ async def extract_makeself_binary(
     # lz4: Lz4Binary,
     # lzop: LzopBinary,
     zstd: ZstdBinary,
+    shasum: ShasumBinary,
 ) -> MakeselfBinary:
     out = "__makeself"
     shims = await Get(
         BinaryShims,
         BinaryShimsRequest(
             paths=(
+                # bzip3,
+                # lz4,
+                # lzop,
                 awk,
                 base64,
                 basename,
                 bash,
                 bzip2,
-                # bzip3,
                 cat,
                 cut,
                 dd,
@@ -143,12 +147,11 @@ async def extract_makeself_binary(
                 gzip,
                 head,
                 id,
-                # lz4,
-                # lzop,
                 md5sum,
                 mkdir,
                 pwd,
                 sed,
+                shasum,
                 tail,
                 tar,
                 test,
@@ -174,10 +177,11 @@ async def extract_makeself_binary(
     result = await Get(
         ProcessResult,
         Process(
-            [bash.path, "-c", "pwd;" + " ".join(argv)],
+            [bash.path, "-x"] + argv,
             input_digest=digest,
-            output_directories=[out],
+            output_directories=[out, "tmp"],
             description=f"Extracting Makeself binary: {out}",
+            level=LogLevel.DEBUG,
         ),
     )
     return MakeselfBinary(digest=result.output_digest, exe=f"{out}/makeself.sh")

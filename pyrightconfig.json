@@ -4,14 +4,11 @@
     "**/venv",
     "**/dist"
   ],
-  "venvPath": "dist/export/python/virtualenvs/pants-plugins/",
-  "venv": "3.9.16",
+  "venvPath": "dist/export/python/virtualenvs/python-default/",
+  "venv": "3.9.18",
   "executionEnvironments": [
     {
-      "root": "pants-plugins",
-      "extraPaths": [
-        "dpdtk-core/src"
-      ]
+      "root": "pants-plugins"
     }
   ]
 }

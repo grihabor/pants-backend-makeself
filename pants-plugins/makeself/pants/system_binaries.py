@@ -108,6 +108,10 @@ class ZstdBinary(BinaryPath):
     pass
 
 
+class ShasumBinary(BinaryPath):
+    pass
+
+
 @rule(desc="Finding the `dirname` binary", level=LogLevel.DEBUG)
 async def find_dirname() -> DirnameBinary:
     request = BinaryPathRequest(binary_name="dirname", search_path=SEARCH_PATHS)
@@ -306,6 +310,14 @@ async def find_zstd() -> ZstdBinary:
     paths = await Get(BinaryPaths, BinaryPathRequest, request)
     first_path = paths.first_path_or_raise(request, rationale="zstd file")
     return ZstdBinary(first_path.path, first_path.fingerprint)
+
+
+@rule(desc="Finding the `shasum` binary", level=LogLevel.DEBUG)
+async def find_shasum() -> ShasumBinary:
+    request = BinaryPathRequest(binary_name="shasum", search_path=SEARCH_PATHS)
+    paths = await Get(BinaryPaths, BinaryPathRequest, request)
+    first_path = paths.first_path_or_raise(request, rationale="shasum file")
+    return ShasumBinary(first_path.path, first_path.fingerprint)
 
 
 def rules():
