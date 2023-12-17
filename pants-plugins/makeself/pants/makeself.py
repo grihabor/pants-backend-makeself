@@ -89,12 +89,14 @@ class MakeselfBinary(DownloadedExternalTool):
     """The Makeself binary."""
 
 
-@rule(desc="Extract Makeself Binary", level=LogLevel.DEBUG)
-async def extract_makeself_binary(
+@rule(desc="Extract Makeself tool", level=LogLevel.DEBUG)
+async def extract_makeself_tool(
     dist: MakeselfDistribution,
     awk: AwkBinary,
+    base64: Base64Binary,
     basename: BasenameBinary,
     bash: BashBinary,
+    bzip2: Bzip2Binary,
     cat: CatBinary,
     cut: CutBinary,
     dd: DdBinary,
@@ -102,35 +104,27 @@ async def extract_makeself_binary(
     dirname: DirnameBinary,
     expr: ExprBinary,
     find: FindBinary,
+    gpg: GpgBinary,
     gzip: GzipBinary,
     head: HeadBinary,
     id: IdBinary,
     md5sum: Md5sumBinary,
     mkdir: MkdirBinary,
+    pwd: PwdBinary,
     sed: SedBinary,
+    shasum: ShasumBinary,
     tail: TailBinary,
-    wc: WcBinary,
     tar: TarBinary,
     test: TestBinary,
-    pwd: PwdBinary,
+    wc: WcBinary,
     xz: XzBinary,
-    gpg: GpgBinary,
-    base64: Base64Binary,
-    bzip2: Bzip2Binary,
-    # bzip3: Bzip3Binary,
-    # lz4: Lz4Binary,
-    # lzop: LzopBinary,
     zstd: ZstdBinary,
-    shasum: ShasumBinary,
 ) -> MakeselfBinary:
     out = "__makeself"
     shims = await Get(
         BinaryShims,
         BinaryShimsRequest(
             paths=(
-                # bzip3,
-                # lz4,
-                # lzop,
                 awk,
                 base64,
                 basename,
@@ -159,10 +153,9 @@ async def extract_makeself_binary(
                 xz,
                 zstd,
             ),
-            rationale="execute makeself script",
+            rationale="execute makeself tool",
         ),
     )
-    digest = await Get(Digest, MergeDigests([dist.digest, shims.digest]))
     argv = [
         dist.exe,
         "--accept",
@@ -177,11 +170,13 @@ async def extract_makeself_binary(
     result = await Get(
         ProcessResult,
         Process(
-            [bash.path, "-x"] + argv,
-            input_digest=digest,
+            [bash.path] + argv,
+            input_digest=dist.digest,
+            immutable_input_digests=shims.immutable_input_digests,
             output_directories=[out, "tmp"],
-            description=f"Extracting Makeself binary: {out}",
+            description=f"Extracting Makeself tool: {out}",
             level=LogLevel.DEBUG,
+            env={"PATH": shims.path_component},
         ),
     )
     return MakeselfBinary(digest=result.output_digest, exe=f"{out}/makeself.sh")
