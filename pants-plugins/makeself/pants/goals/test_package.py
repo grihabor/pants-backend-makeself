@@ -3,7 +3,7 @@ import os
 import pytest
 from makeself.pants.goals.package import BuiltMakeselfArtifact, MakeselfPackageFieldSet
 from makeself.pants.goals.package import rules as makeself_package_rules
-from makeself.pants.makeself import MakeselfBinary
+from makeself.pants.makeself import MakeselfTool
 from makeself.pants.makeself import rules as makeself_rules
 from makeself.pants.target_types import MakeselfBinaryTarget
 from pants.core.goals.package import BuiltPackage
@@ -21,7 +21,7 @@ def rule_runner() -> RuleRunner:
         rules=[
             *makeself_package_rules(),
             *makeself_rules(),
-            QueryRule(MakeselfBinary, ()),
+            QueryRule(MakeselfTool, ()),
         ],
     )
     return rule_runner

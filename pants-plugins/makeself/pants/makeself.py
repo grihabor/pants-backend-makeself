@@ -1,5 +1,6 @@
 import dataclasses
 import logging
+import os
 from collections.abc import Iterable
 from dataclasses import dataclass
 from typing import Optional
@@ -9,10 +10,13 @@ from makeself.pants.system_binaries import (
     Base64Binary,
     BasenameBinary,
     Bzip2Binary,
+    CksumBinary,
     CutBinary,
+    DateBinary,
     DdBinary,
     DfBinary,
     DirnameBinary,
+    DuBinary,
     ExprBinary,
     FindBinary,
     GpgBinary,
@@ -21,11 +25,15 @@ from makeself.pants.system_binaries import (
     IdBinary,
     Md5sumBinary,
     PwdBinary,
+    RmBinary,
     SedBinary,
-    ShasumBinary,
+    ShBinary,
+    SortBinary,
     TailBinary,
     TestBinary,
+    TrBinary,
     WcBinary,
+    XargsBinary,
     XzBinary,
     ZstdBinary,
 )
@@ -40,10 +48,11 @@ from pants.core.util_rules.system_binaries import (
     BinaryShims,
     BinaryShimsRequest,
     CatBinary,
+    ChmodBinary,
     MkdirBinary,
     TarBinary,
 )
-from pants.engine.fs import EMPTY_DIGEST, Digest, MergeDigests
+from pants.engine.fs import EMPTY_DIGEST, Digest, MergeDigests, RemovePrefix
 from pants.engine.platform import Platform
 from pants.engine.process import Process, ProcessCacheScope, ProcessResult
 from pants.engine.rules import Get, collect_rules, rule
@@ -67,31 +76,31 @@ class MakeselfSubsystem(TemplatedExternalTool):
     default_url_template = "https://github.com/megastep/makeself/releases/download/release-{version}/makeself-{version}.run"
 
 
-class MakeselfDistribution(DownloadedExternalTool):
+class MakeselfArchive(DownloadedExternalTool):
     """The Makeself distribution."""
 
 
-@rule(desc="Download Makeself distribution", level=LogLevel.DEBUG)
-async def download_makeself_distrubution(
+@rule(desc="Download Makeself archive", level=LogLevel.DEBUG)
+async def download_makeself_archive(
     options: MakeselfSubsystem,
     platform: Platform,
-) -> MakeselfDistribution:
+) -> MakeselfArchive:
     tool = await Get(
         DownloadedExternalTool,
         ExternalToolRequest,
         options.get_request(platform),
     )
     logger.debug("makeself external tool: %s", tool)
-    return MakeselfDistribution(digest=tool.digest, exe=tool.exe)
+    return MakeselfArchive(digest=tool.digest, exe=tool.exe)
 
 
-class MakeselfBinary(DownloadedExternalTool):
-    """The Makeself binary."""
+class MakeselfTool(DownloadedExternalTool):
+    """The Makeself tool."""
 
 
-@rule(desc="Extract Makeself tool", level=LogLevel.DEBUG)
-async def extract_makeself_tool(
-    dist: MakeselfDistribution,
+@rule(desc="Extract Makeself archive", level=LogLevel.DEBUG)
+async def extract_makeself_archive(
+    dist: MakeselfArchive,
     awk: AwkBinary,
     base64: Base64Binary,
     basename: BasenameBinary,
@@ -112,14 +121,14 @@ async def extract_makeself_tool(
     mkdir: MkdirBinary,
     pwd: PwdBinary,
     sed: SedBinary,
-    shasum: ShasumBinary,
+    shasum: DateBinary,
     tail: TailBinary,
     tar: TarBinary,
     test: TestBinary,
     wc: WcBinary,
     xz: XzBinary,
     zstd: ZstdBinary,
-) -> MakeselfBinary:
+) -> MakeselfTool:
     out = "__makeself"
     shims = await Get(
         BinaryShims,
@@ -153,7 +162,7 @@ async def extract_makeself_tool(
                 xz,
                 zstd,
             ),
-            rationale="execute makeself tool",
+            rationale="extract makeself archive",
         ),
     )
     argv = [
@@ -174,12 +183,13 @@ async def extract_makeself_tool(
             input_digest=dist.digest,
             immutable_input_digests=shims.immutable_input_digests,
             output_directories=[out, "tmp"],
-            description=f"Extracting Makeself tool: {out}",
+            description=f"Extracting Makeself archive: {out}",
             level=LogLevel.DEBUG,
             env={"PATH": shims.path_component},
         ),
     )
-    return MakeselfBinary(digest=result.output_digest, exe=f"{out}/makeself.sh")
+    result = await Get(Digest, RemovePrefix(result.output_digest, out))
+    return MakeselfTool(digest=result, exe=f"makeself.sh")
 
 
 @dataclass(frozen=True)
@@ -190,29 +200,34 @@ class MakeselfProcess:
     level: LogLevel
     cache_scope: Optional[ProcessCacheScope]
     timeout_seconds: Optional[int]
-    output_directories: tuple[str, ...]
-    output_files: tuple[str, ...]
+    output_filename: str
 
     @classmethod
     def new(
         cls,
-        argv: Iterable[str],
         *,
+        archive_dir: str,
+        file_name: str,
+        label: str,
+        startup_script: str,
         description: str,
+        output_filename: str,
         input_digest: Digest = EMPTY_DIGEST,
         level: LogLevel = LogLevel.INFO,
-        output_directories: Optional[Iterable[str]] = None,
-        output_files: Optional[Iterable[str]] = None,
         cache_scope: Optional[ProcessCacheScope] = None,
         timeout_seconds: Optional[int] = None,
     ):
         return MakeselfProcess(
-            argv=tuple(argv),
+            argv=(
+                archive_dir,
+                file_name,
+                label,
+                startup_script,
+            ),
             input_digest=input_digest,
             description=description,
             level=level,
-            output_directories=tuple(output_directories or ()),
-            output_files=tuple(output_files or ()),
+            output_filename=output_filename,
             cache_scope=cache_scope,
             timeout_seconds=timeout_seconds,
         )
@@ -221,20 +236,75 @@ class MakeselfProcess:
 @rule
 async def makeself_process(
     request: MakeselfProcess,
-    makeself: MakeselfBinary,
+    makeself: MakeselfTool,
+    awk: AwkBinary,
+    basename: BasenameBinary,
     bash: BashBinary,
+    cat: CatBinary,
+    date: DateBinary,
+    dirname: DirnameBinary,
+    du: DuBinary,
+    expr: ExprBinary,
+    find: FindBinary,
+    gzip: GzipBinary,
+    rm: RmBinary,
+    sed: SedBinary,
+    sh: ShBinary,
+    sort: SortBinary,
+    tar: TarBinary,
+    wc: WcBinary,
+    xargs: XargsBinary,
+    tr: TrBinary,
+    cksum: CksumBinary,
+    cut: CutBinary,
+    chmod: ChmodBinary,
 ) -> Process:
-    argv = [bash.path, "-c", " ".join([makeself.exe, *request.argv])]
+    shims = await Get(
+        BinaryShims,
+        BinaryShimsRequest(
+            paths=(
+                awk,
+                basename,
+                cat,
+                date,
+                dirname,
+                du,
+                expr,
+                find,
+                gzip,
+                rm,
+                sed,
+                sh,
+                sort,
+                tar,
+                wc,
+                tr,
+                cksum,
+                cut,
+                chmod,
+                xargs,
+            ),
+            rationale="create makeself binary",
+        ),
+    )
+    tooldir = "__makeself"
+    argv = (
+        bash.path,
+        "-c",
+        " ".join([os.path.join(tooldir, makeself.exe), *request.argv]),
+    )
     return Process(
         argv,
         input_digest=request.input_digest,
-        immutable_input_digests={makeself.exe: makeself.digest},
-        env={},
+        immutable_input_digests={
+            tooldir: makeself.digest,
+            **shims.immutable_input_digests,
+        },
+        env={"PATH": shims.path_component},
         description=request.description,
         level=request.level,
         append_only_caches={},
-        output_directories=request.output_directories,
-        output_files=request.output_files,
+        output_files=(request.output_filename,),
         cache_scope=request.cache_scope or ProcessCacheScope.SUCCESSFUL,
         timeout_seconds=request.timeout_seconds,
     )

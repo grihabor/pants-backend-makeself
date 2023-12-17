@@ -112,6 +112,38 @@ class ShasumBinary(BinaryPath):
     pass
 
 
+class DateBinary(BinaryPath):
+    pass
+
+
+class RmBinary(BinaryPath):
+    pass
+
+
+class DuBinary(BinaryPath):
+    pass
+
+
+class SortBinary(BinaryPath):
+    pass
+
+
+class XargsBinary(BinaryPath):
+    pass
+
+
+class ShBinary(BinaryPath):
+    pass
+
+
+class TrBinary(BinaryPath):
+    pass
+
+
+class CksumBinary(BinaryPath):
+    pass
+
+
 @rule(desc="Finding the `dirname` binary", level=LogLevel.DEBUG)
 async def find_dirname() -> DirnameBinary:
     request = BinaryPathRequest(binary_name="dirname", search_path=SEARCH_PATHS)
@@ -318,6 +350,70 @@ async def find_shasum() -> ShasumBinary:
     paths = await Get(BinaryPaths, BinaryPathRequest, request)
     first_path = paths.first_path_or_raise(request, rationale="shasum file")
     return ShasumBinary(first_path.path, first_path.fingerprint)
+
+
+@rule(desc="Finding the `date` binary", level=LogLevel.DEBUG)
+async def find_date() -> DateBinary:
+    request = BinaryPathRequest(binary_name="date", search_path=SEARCH_PATHS)
+    paths = await Get(BinaryPaths, BinaryPathRequest, request)
+    first_path = paths.first_path_or_raise(request, rationale="date file")
+    return DateBinary(first_path.path, first_path.fingerprint)
+
+
+@rule(desc="Finding the `rm` binary", level=LogLevel.DEBUG)
+async def find_rm() -> RmBinary:
+    request = BinaryPathRequest(binary_name="rm", search_path=SEARCH_PATHS)
+    paths = await Get(BinaryPaths, BinaryPathRequest, request)
+    first_path = paths.first_path_or_raise(request, rationale="rm file")
+    return RmBinary(first_path.path, first_path.fingerprint)
+
+
+@rule(desc="Finding the `du` binary", level=LogLevel.DEBUG)
+async def find_du() -> DuBinary:
+    request = BinaryPathRequest(binary_name="du", search_path=SEARCH_PATHS)
+    paths = await Get(BinaryPaths, BinaryPathRequest, request)
+    first_path = paths.first_path_or_raise(request, rationale="du file")
+    return DuBinary(first_path.path, first_path.fingerprint)
+
+
+@rule(desc="Finding the `xargs` binary", level=LogLevel.DEBUG)
+async def find_xargs() -> XargsBinary:
+    request = BinaryPathRequest(binary_name="xargs", search_path=SEARCH_PATHS)
+    paths = await Get(BinaryPaths, BinaryPathRequest, request)
+    first_path = paths.first_path_or_raise(request, rationale="xargs file")
+    return XargsBinary(first_path.path, first_path.fingerprint)
+
+
+@rule(desc="Finding the `sort` binary", level=LogLevel.DEBUG)
+async def find_sort() -> SortBinary:
+    request = BinaryPathRequest(binary_name="sort", search_path=SEARCH_PATHS)
+    paths = await Get(BinaryPaths, BinaryPathRequest, request)
+    first_path = paths.first_path_or_raise(request, rationale="sort file")
+    return SortBinary(first_path.path, first_path.fingerprint)
+
+
+@rule(desc="Finding the `sh` binary", level=LogLevel.DEBUG)
+async def find_sh() -> ShBinary:
+    request = BinaryPathRequest(binary_name="sh", search_path=SEARCH_PATHS)
+    paths = await Get(BinaryPaths, BinaryPathRequest, request)
+    first_path = paths.first_path_or_raise(request, rationale="sh file")
+    return ShBinary(first_path.path, first_path.fingerprint)
+
+
+@rule(desc="Finding the `tr` binary", level=LogLevel.DEBUG)
+async def find_tr() -> TrBinary:
+    request = BinaryPathRequest(binary_name="tr", search_path=SEARCH_PATHS)
+    paths = await Get(BinaryPaths, BinaryPathRequest, request)
+    first_path = paths.first_path_or_raise(request, rationale="tr file")
+    return TrBinary(first_path.path, first_path.fingerprint)
+
+
+@rule(desc="Finding the `cksum` binary", level=LogLevel.DEBUG)
+async def find_cksum() -> CksumBinary:
+    request = BinaryPathRequest(binary_name="cksum", search_path=SEARCH_PATHS)
+    paths = await Get(BinaryPaths, BinaryPathRequest, request)
+    first_path = paths.first_path_or_raise(request, rationale="cksum file")
+    return CksumBinary(first_path.path, first_path.fingerprint)
 
 
 def rules():
