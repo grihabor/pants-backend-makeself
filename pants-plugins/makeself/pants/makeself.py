@@ -194,7 +194,10 @@ async def extract_makeself_archive(
 
 @dataclass(frozen=True)
 class MakeselfProcess:
-    argv: tuple[str, ...]
+    archive_dir: str
+    file_name: str
+    label: str
+    startup_script: str
     input_digest: Digest
     description: str = dataclasses.field(compare=False)
     level: LogLevel
@@ -218,12 +221,10 @@ class MakeselfProcess:
         timeout_seconds: Optional[int] = None,
     ):
         return MakeselfProcess(
-            argv=(
-                archive_dir,
-                file_name,
-                label,
-                startup_script,
-            ),
+            archive_dir=archive_dir,
+            file_name=file_name,
+            label=label,
+            startup_script=startup_script,
             input_digest=input_digest,
             description=description,
             level=level,
@@ -289,9 +290,11 @@ async def makeself_process(
     )
     tooldir = "__makeself"
     argv = (
-        bash.path,
-        "-c",
-        " ".join([os.path.join(tooldir, makeself.exe), *request.argv]),
+        os.path.join(tooldir, makeself.exe),
+        request.archive_dir,
+        request.file_name,
+        request.label,
+        os.path.join(os.curdir, request.startup_script),
     )
     return Process(
         argv,

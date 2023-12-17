@@ -70,7 +70,7 @@ async def package_makeself_binary(
             label="name of the archive",
             startup_script=startup_script_filename,
             input_digest=digest,
-            output_filename=output_filename.name,
+            output_filename=str(output_filename),
             description=f"Packaging Makeself binary: {field_set.address}",
         ),
     )
