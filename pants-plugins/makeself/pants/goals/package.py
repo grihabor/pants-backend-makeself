@@ -47,7 +47,7 @@ class MakeselfBinaryPackageFieldSet(PackageFieldSet):
 async def package_makeself_binary(
     field_set: MakeselfBinaryPackageFieldSet,
 ) -> BuiltPackage:
-    archive_dir = "__out"
+    archive_dir = "__archive"
 
     startup_script, digest = await MultiGet(
         Get(SourceFiles, SourceFilesRequest([field_set.startup_script])),
