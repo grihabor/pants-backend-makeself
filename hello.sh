@@ -1,3 +1,3 @@
 #!/bin/bash
 
-run-py.pex
+./pex.pex

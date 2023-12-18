@@ -1,7 +1,6 @@
 import dataclasses
 import logging
 import os
-from collections.abc import Iterable
 from dataclasses import dataclass
 from typing import Optional
 
@@ -52,7 +51,7 @@ from pants.core.util_rules.system_binaries import (
     MkdirBinary,
     TarBinary,
 )
-from pants.engine.fs import EMPTY_DIGEST, Digest, MergeDigests, RemovePrefix
+from pants.engine.fs import EMPTY_DIGEST, Digest, RemovePrefix
 from pants.engine.platform import Platform
 from pants.engine.process import Process, ProcessCacheScope, ProcessResult
 from pants.engine.rules import Get, collect_rules, rule
@@ -189,7 +188,7 @@ async def extract_makeself_archive(
         ),
     )
     result = await Get(Digest, RemovePrefix(result.output_digest, out))
-    return MakeselfTool(digest=result, exe=f"makeself.sh")
+    return MakeselfTool(digest=result, exe="makeself.sh")
 
 
 @dataclass(frozen=True)
