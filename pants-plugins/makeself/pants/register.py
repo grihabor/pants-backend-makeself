@@ -2,11 +2,11 @@ from makeself.pants import system_binaries
 
 from . import makeself
 from .goals import package
-from .target_types import MakeselfBinaryTarget
+from .target_types import MakeselfArchiveTarget
 
 
 def target_types():
-    return [MakeselfBinaryTarget]
+    return [MakeselfArchiveTarget]
 
 
 def rules():

@@ -5,9 +5,9 @@ from pathlib import PurePath
 
 from makeself.pants.makeself import MakeselfProcess
 from makeself.pants.target_types import (
-    MakeselfBinaryFilesField,
-    MakeselfBinaryPackagesField,
-    MakeselfBinaryStartupScript,
+    MakeselfArchiveFilesField,
+    MakeselfArchivePackagesField,
+    MakeselfArchiveStartupScript,
 )
 from pants.core.goals.package import (
     BuiltPackage,
@@ -37,9 +37,9 @@ logger = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)
-class BuiltMakeselfBinaryArtifact(BuiltPackageArtifact):
+class BuiltMakeselfArchiveArtifact(BuiltPackageArtifact):
     @classmethod
-    def create(cls, relpath: str) -> "BuiltMakeselfBinaryArtifact":
+    def create(cls, relpath: str) -> "BuiltMakeselfArchiveArtifact":
         return cls(
             relpath=relpath,
             extra_log_lines=(f"Built Makeself binary: {relpath}",),
@@ -47,18 +47,18 @@ class BuiltMakeselfBinaryArtifact(BuiltPackageArtifact):
 
 
 @dataclass(frozen=True)
-class MakeselfBinaryPackageFieldSet(PackageFieldSet):
-    required_fields = (MakeselfBinaryStartupScript,)
+class MakeselfArchivePackageFieldSet(PackageFieldSet):
+    required_fields = (MakeselfArchiveStartupScript,)
 
-    startup_script: MakeselfBinaryStartupScript
-    files: MakeselfBinaryFilesField
-    packages: MakeselfBinaryPackagesField
+    startup_script: MakeselfArchiveStartupScript
+    files: MakeselfArchiveFilesField
+    packages: MakeselfArchivePackagesField
     output_path: OutputPathField
 
 
 @rule
 async def package_makeself_binary(
-    field_set: MakeselfBinaryPackageFieldSet,
+    field_set: MakeselfArchivePackageFieldSet,
 ) -> BuiltPackage:
     archive_dir = "__archive"
 
@@ -122,12 +122,12 @@ async def package_makeself_binary(
 
     return BuiltPackage(
         snapshot.digest,
-        artifacts=tuple(BuiltMakeselfBinaryArtifact.create(file) for file in snapshot.files),
+        artifacts=tuple(BuiltMakeselfArchiveArtifact.create(file) for file in snapshot.files),
     )
 
 
 def rules():
     return [
         *collect_rules(),
-        UnionRule(PackageFieldSet, MakeselfBinaryPackageFieldSet),
+        UnionRule(PackageFieldSet, MakeselfArchivePackageFieldSet),
     ]

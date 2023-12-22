@@ -9,7 +9,7 @@ from pants.util.docutil import bin_name
 from pants.util.strutil import help_text
 
 
-class MakeselfBinaryStartupScript(SingleSourceField):
+class MakeselfArchiveStartupScript(SingleSourceField):
     alias = "startup_script"
     help = help_text(
         """
@@ -19,7 +19,7 @@ class MakeselfBinaryStartupScript(SingleSourceField):
     )
 
 
-class MakeselfBinaryFilesField(SpecialCasedDependencies):
+class MakeselfArchiveFilesField(SpecialCasedDependencies):
     alias = "files"
     help = help_text(
         """
@@ -39,7 +39,7 @@ class MakeselfBinaryFilesField(SpecialCasedDependencies):
     )
 
 
-class MakeselfBinaryPackagesField(SpecialCasedDependencies):
+class MakeselfArchivePackagesField(SpecialCasedDependencies):
     alias = "packages"
     help = help_text(
         f"""
@@ -56,17 +56,17 @@ class MakeselfBinaryPackagesField(SpecialCasedDependencies):
     )
 
 
-class MakeselfBinaryOutputPath(OutputPathField):
+class MakeselfArchiveOutputPath(OutputPathField):
     pass
 
 
-class MakeselfBinaryTarget(Target):
+class MakeselfArchiveTarget(Target):
     alias = "makeself_archive"
     core_fields = (
-        MakeselfBinaryStartupScript,
-        MakeselfBinaryFilesField,
-        MakeselfBinaryPackagesField,
-        MakeselfBinaryOutputPath,
+        MakeselfArchiveStartupScript,
+        MakeselfArchiveFilesField,
+        MakeselfArchivePackagesField,
+        MakeselfArchiveOutputPath,
         *COMMON_TARGET_FIELDS,
     )
     help = help_text(

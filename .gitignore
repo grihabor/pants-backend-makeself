@@ -5,3 +5,4 @@ dist/
 *.dot
 *.svg
 *.txt
+.python-version
