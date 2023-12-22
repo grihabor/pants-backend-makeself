@@ -1,16 +1,12 @@
 import os
 
 import pytest
-from makeself.pants import goals, makeself, package, system_binaries
+from makeself.pants import makeself, system_binaries
+from makeself.pants.goals import package
 from makeself.pants.goals.package import MakeselfArchivePackageFieldSet
-from makeself.pants.goals.package import rules as makeself_package_rules
-from makeself.pants.makeself import MakeselfProcess, MakeselfTool
-from makeself.pants.makeself import rules as makeself_rules
-from makeself.pants.system_binaries import rules as system_binaries_rules
 from makeself.pants.target_types import MakeselfArchiveTarget
 from pants.core.goals.package import BuiltPackage
 from pants.engine.addresses import Address
-from pants.engine.process import Process, ProcessResult
 from pants.engine.rules import QueryRule
 from pants.testutil.rule_runner import QueryRule, RuleRunner
 
