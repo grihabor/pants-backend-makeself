@@ -11,14 +11,13 @@ from pants.core.util_rules.external_tool import (
     TemplatedExternalTool,
 )
 from pants.core.util_rules.system_binaries import (
-    BashBinary,
     BinaryShims,
     BinaryShimsRequest,
     CatBinary,
     ChmodBinary,
     TarBinary,
 )
-from pants.engine.fs import EMPTY_DIGEST, Digest, RemovePrefix
+from pants.engine.fs import Digest, RemovePrefix
 from pants.engine.platform import Platform
 from pants.engine.process import Process, ProcessCacheScope, ProcessResult
 from pants.engine.rules import Get, collect_rules, rule
@@ -107,54 +106,25 @@ async def extract_makeself_distribution(
 
 
 @dataclass(frozen=True)
-class MakeselfProcess:
+class CreateMakeselfArchive:
     archive_dir: str
     file_name: str
     label: str
     startup_script: str
     input_digest: Digest
     description: str = dataclasses.field(compare=False)
-    level: LogLevel
-    cache_scope: Optional[ProcessCacheScope]
-    timeout_seconds: Optional[int]
     output_filename: str
-
-    @classmethod
-    def new(
-        cls,
-        *,
-        archive_dir: str,
-        file_name: str,
-        label: str,
-        startup_script: str,
-        description: str,
-        output_filename: str,
-        input_digest: Digest = EMPTY_DIGEST,
-        level: LogLevel = LogLevel.INFO,
-        cache_scope: Optional[ProcessCacheScope] = None,
-        timeout_seconds: Optional[int] = None,
-    ):
-        return MakeselfProcess(
-            archive_dir=archive_dir,
-            file_name=file_name,
-            label=label,
-            startup_script=startup_script,
-            input_digest=input_digest,
-            description=description,
-            level=level,
-            output_filename=output_filename,
-            cache_scope=cache_scope,
-            timeout_seconds=timeout_seconds,
-        )
+    level: LogLevel = LogLevel.INFO
+    cache_scope: Optional[ProcessCacheScope] = None
+    timeout_seconds: Optional[int] = None
 
 
 @rule
 async def create_makeself_archive(
-    request: MakeselfProcess,
+    request: CreateMakeselfArchive,
     makeself: MakeselfTool,
     awk: AwkBinary,
     basename: BasenameBinary,
-    bash: BashBinary,
     cat: CatBinary,
     date: DateBinary,
     dirname: DirnameBinary,

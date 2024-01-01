@@ -29,7 +29,7 @@ from pants.engine.target import (
 )
 from pants.engine.unions import UnionRule
 from pants.util.logging import LogLevel
-from pants_backend_makeself.makeself import MakeselfProcess
+from pants_backend_makeself.makeself import CreateMakeselfArchive
 from pants_backend_makeself.target_types import (
     MakeselfArchiveFilesField,
     MakeselfArchivePackagesField,
@@ -113,15 +113,14 @@ async def package_makeself_binary(
     startup_script_filename = startup_script.files[0]
     result = await Get(
         ProcessResult,
-        MakeselfProcess,
-        MakeselfProcess.new(
+        CreateMakeselfArchive(
             archive_dir=archive_dir,
             file_name=output_filename,
             label=field_set.label.value or output_filename,
             startup_script=startup_script_filename,
             input_digest=input_digest,
             output_filename=output_filename,
-            description=f"Packaging Makeself binary: {field_set.address}",
+            description=f"Packaging makeself archive: {field_set.address}",
             level=LogLevel.DEBUG,
         ),
     )
