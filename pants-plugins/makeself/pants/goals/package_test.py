@@ -63,7 +63,4 @@ def test_makeself_package(rule_runner: RuleRunner) -> None:
             )
         ],
     )
-    assert (
-        result.stdout
-        == b"Verifying archive integrity... All good.\nUncompressing archive.run\ntest\n"
-    )
+    assert result.stdout == b"test\n"

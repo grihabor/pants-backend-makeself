@@ -188,12 +188,12 @@ async def run_makeself_archive(
         "--nox11",
         "--nochown",
         "--nodiskspace",
-        "--keep",
+        "--quiet",
     ]
 
     if output_directory := request.output_directory:
         output_directories = [output_directory]
-        argv.extend(["--target", request.output_directory])
+        argv.extend(["--keep", "--target", request.output_directory])
 
     return Process(
         argv=[bash.path] + argv,
