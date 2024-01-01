@@ -17,6 +17,7 @@ from pants.core.goals.package import (
     OutputPathField,
     PackageFieldSet,
 )
+from pants.core.goals.run import RunFieldSet, RunInSandboxBehavior
 from pants.core.target_types import FileSourceField
 from pants.core.util_rules import source_files
 from pants.core.util_rules.source_files import SourceFiles, SourceFilesRequest
@@ -50,8 +51,9 @@ class BuiltMakeselfArchiveArtifact(BuiltPackageArtifact):
 
 
 @dataclass(frozen=True)
-class MakeselfArchivePackageFieldSet(PackageFieldSet):
+class MakeselfArchiveFieldSet(PackageFieldSet, RunFieldSet):
     required_fields = (MakeselfArchiveStartupScript,)
+    run_in_sandbox_behavior = RunInSandboxBehavior.RUN_REQUEST_HERMETIC
 
     startup_script: MakeselfArchiveStartupScript
     label: MakeselfArthiveLabel
@@ -62,7 +64,7 @@ class MakeselfArchivePackageFieldSet(PackageFieldSet):
 
 @rule
 async def package_makeself_binary(
-    field_set: MakeselfArchivePackageFieldSet,
+    field_set: MakeselfArchiveFieldSet,
 ) -> BuiltPackage:
     archive_dir = "__archive"
 
@@ -138,5 +140,6 @@ def rules():
         *collect_rules(),
         *package.rules(),
         *source_files.rules(),
-        UnionRule(PackageFieldSet, MakeselfArchivePackageFieldSet),
+        *MakeselfArchiveFieldSet.rules(),
+        UnionRule(PackageFieldSet, MakeselfArchiveFieldSet),
     ]

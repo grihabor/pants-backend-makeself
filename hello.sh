@@ -1,3 +1,4 @@
 #!/bin/bash
 
-./pex.pex
+echo "hello pants"
+#./pex.pex

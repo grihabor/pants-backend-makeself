@@ -1,11 +1,8 @@
 import pytest
 from makeself.pants import makeself
 from makeself.pants import system_binaries as makeself_system_binaries
-from makeself.pants.goals import package
-from makeself.pants.goals.package import (
-    BuiltMakeselfArchiveArtifact,
-    MakeselfArchivePackageFieldSet,
-)
+from makeself.pants.goals import package, run
+from makeself.pants.goals.package import BuiltMakeselfArchiveArtifact, MakeselfArchiveFieldSet
 from makeself.pants.makeself import RunMakeselfArchive
 from makeself.pants.target_types import MakeselfArchiveTarget
 from pants.core.goals.package import BuiltPackage
@@ -23,8 +20,9 @@ def rule_runner() -> RuleRunner:
         rules=[
             *makeself_system_binaries.rules(),
             *package.rules(),
+            *run.rules(),
             *makeself.rules(),
-            QueryRule(BuiltPackage, [MakeselfArchivePackageFieldSet]),
+            QueryRule(BuiltPackage, [MakeselfArchiveFieldSet]),
             QueryRule(ProcessResult, [RunMakeselfArchive]),
         ],
     )
@@ -44,7 +42,7 @@ def test_makeself_package(rule_runner: RuleRunner) -> None:
     rule_runner.chmod("src/shell/run.sh", 0o777)
 
     target = rule_runner.get_target(Address("src/shell", target_name=binary_name))
-    field_set = MakeselfArchivePackageFieldSet.create(target)
+    field_set = MakeselfArchiveFieldSet.create(target)
 
     package = rule_runner.request(BuiltPackage, [field_set])
 

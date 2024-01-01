@@ -136,6 +136,7 @@ async def run_makeself_archive(
     md5sum: Md5sumBinary,
     mkdir: MkdirBinary,
     pwd: PwdBinary,
+    rm: RmBinary,
     sed: SedBinary,
     shasum: DateBinary,
     tail: TailBinary,
@@ -168,6 +169,7 @@ async def run_makeself_archive(
                 md5sum,
                 mkdir,
                 pwd,
+                rm,
                 sed,
                 shasum,
                 tail,
@@ -177,7 +179,7 @@ async def run_makeself_archive(
                 xz,
                 zstd,
             ),
-            rationale="extract makeself archive",
+            rationale="run makeself archive",
         ),
     )
     output_directories = []
@@ -196,7 +198,7 @@ async def run_makeself_archive(
         argv.extend(["--keep", "--target", request.output_directory])
 
     return Process(
-        argv=[bash.path] + argv,
+        argv=argv,
         input_digest=request.input_digest,
         immutable_input_digests=shims.immutable_input_digests,
         output_directories=output_directories,
