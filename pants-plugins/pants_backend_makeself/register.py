@@ -1,4 +1,4 @@
-from . import makeself, system_binaries, util_rules
+from . import makeself, system_binaries
 from .goals import package, run
 from .target_types import MakeselfArchiveTarget
 
@@ -13,5 +13,4 @@ def rules():
         *package.rules(),
         *run.rules(),
         *system_binaries.rules(),
-        *util_rules.rules(),
     ]

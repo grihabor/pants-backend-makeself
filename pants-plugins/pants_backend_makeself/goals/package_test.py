@@ -3,7 +3,7 @@ from pants.core.goals.package import BuiltPackage
 from pants.engine.addresses import Address
 from pants.engine.process import ProcessResult
 from pants.testutil.rule_runner import PYTHON_BOOTSTRAP_ENV, QueryRule, RuleRunner
-from pants_backend_makeself import makeself, system_binaries, util_rules
+from pants_backend_makeself import makeself, system_binaries
 from pants_backend_makeself.goals import package, run
 from pants_backend_makeself.goals.package import (
     BuiltMakeselfArchiveArtifact,
@@ -24,7 +24,6 @@ def rule_runner() -> RuleRunner:
             *package.rules(),
             *run.rules(),
             *system_binaries.rules(),
-            *util_rules.rules(),
             QueryRule(BuiltPackage, [MakeselfArchiveFieldSet]),
             QueryRule(ProcessResult, [RunMakeselfArchive]),
         ],
