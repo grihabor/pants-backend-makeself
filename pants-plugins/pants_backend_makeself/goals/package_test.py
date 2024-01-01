@@ -1,10 +1,10 @@
 import pytest
-from makeself.pants import makeself
-from makeself.pants import system_binaries as makeself_system_binaries
-from makeself.pants.goals import package, run
-from makeself.pants.goals.package import BuiltMakeselfArchiveArtifact, MakeselfArchiveFieldSet
-from makeself.pants.makeself import RunMakeselfArchive
-from makeself.pants.target_types import MakeselfArchiveTarget
+from pants_backend_makeself import makeself
+from pants_backend_makeself import system_binaries as makeself_system_binaries
+from pants_backend_makeself.goals import package, run
+from pants_backend_makeself.goals.package import BuiltMakeselfArchiveArtifact, MakeselfArchiveFieldSet
+from pants_backend_makeself.makeself import RunMakeselfArchive
+from pants_backend_makeself.target_types import MakeselfArchiveTarget
 from pants.core.goals.package import BuiltPackage
 from pants.engine.addresses import Address
 from pants.engine.process import ProcessResult

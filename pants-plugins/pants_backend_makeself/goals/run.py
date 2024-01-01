@@ -1,7 +1,7 @@
 import os
 
-from makeself.pants.goals.package import MakeselfArchiveFieldSet
-from makeself.pants.makeself import RunMakeselfArchive
+from pants_backend_makeself.goals.package import MakeselfArchiveFieldSet
+from pants_backend_makeself.makeself import RunMakeselfArchive
 from pants.core.goals.package import BuiltPackage, PackageFieldSet
 from pants.core.goals.run import RunRequest
 from pants.engine.process import Process

@@ -4,7 +4,7 @@ import os
 from dataclasses import dataclass
 from typing import Optional
 
-from makeself.pants.system_binaries import (
+from pants_backend_makeself.system_binaries import (
     AwkBinary,
     Base64Binary,
     BasenameBinary,

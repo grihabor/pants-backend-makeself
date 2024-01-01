@@ -1,4 +1,4 @@
-from makeself.pants import system_binaries
+from pants_backend_makeself import system_binaries
 
 from . import makeself
 from .goals import package, run

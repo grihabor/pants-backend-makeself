@@ -2,8 +2,8 @@ import logging
 from dataclasses import dataclass
 from pathlib import PurePath
 
-from makeself.pants.makeself import MakeselfProcess
-from makeself.pants.target_types import (
+from pants_backend_makeself.makeself import MakeselfProcess
+from pants_backend_makeself.target_types import (
     MakeselfArchiveFilesField,
     MakeselfArchivePackagesField,
     MakeselfArchiveStartupScript,
