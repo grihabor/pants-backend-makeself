@@ -1,4 +1,4 @@
 #!/bin/bash
 
-echo "hello pants"
-#./pex.pex
+#echo "hello pants"
+./pex.pex
