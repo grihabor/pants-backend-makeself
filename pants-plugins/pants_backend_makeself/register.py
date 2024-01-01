@@ -1,6 +1,4 @@
-from pants_backend_makeself import system_binaries
-
-from . import makeself
+from . import makeself, system_binaries, util_rules
 from .goals import package, run
 from .target_types import MakeselfArchiveTarget
 
@@ -11,8 +9,9 @@ def target_types():
 
 def rules():
     return [
-        *system_binaries.rules(),
+        *makeself.rules(),
         *package.rules(),
         *run.rules(),
-        *makeself.rules(),
+        *system_binaries.rules(),
+        *util_rules.rules(),
     ]

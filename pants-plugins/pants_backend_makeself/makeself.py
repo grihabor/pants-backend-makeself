@@ -4,38 +4,6 @@ import os
 from dataclasses import dataclass
 from typing import Optional
 
-from pants_backend_makeself.system_binaries import (
-    AwkBinary,
-    Base64Binary,
-    BasenameBinary,
-    Bzip2Binary,
-    CksumBinary,
-    CutBinary,
-    DateBinary,
-    DdBinary,
-    DfBinary,
-    DirnameBinary,
-    DuBinary,
-    ExprBinary,
-    FindBinary,
-    GpgBinary,
-    GzipBinary,
-    HeadBinary,
-    IdBinary,
-    Md5sumBinary,
-    PwdBinary,
-    RmBinary,
-    SedBinary,
-    ShBinary,
-    SortBinary,
-    TailBinary,
-    TestBinary,
-    TrBinary,
-    WcBinary,
-    XargsBinary,
-    XzBinary,
-    ZstdBinary,
-)
 from pants.core.util_rules import external_tool
 from pants.core.util_rules.external_tool import (
     DownloadedExternalTool,
@@ -48,7 +16,6 @@ from pants.core.util_rules.system_binaries import (
     BinaryShimsRequest,
     CatBinary,
     ChmodBinary,
-    MkdirBinary,
     TarBinary,
 )
 from pants.engine.fs import EMPTY_DIGEST, Digest, RemovePrefix
@@ -56,6 +23,26 @@ from pants.engine.platform import Platform
 from pants.engine.process import Process, ProcessCacheScope, ProcessResult
 from pants.engine.rules import Get, collect_rules, rule
 from pants.util.logging import LogLevel
+from pants_backend_makeself.system_binaries import (
+    AwkBinary,
+    BasenameBinary,
+    CksumBinary,
+    CutBinary,
+    DateBinary,
+    DirnameBinary,
+    DuBinary,
+    ExprBinary,
+    FindBinary,
+    GzipBinary,
+    RmBinary,
+    SedBinary,
+    ShBinary,
+    SortBinary,
+    TrBinary,
+    WcBinary,
+    XargsBinary,
+)
+from pants_backend_makeself.util_rules import RunMakeselfArchive
 
 logger = logging.getLogger(__name__)
 
@@ -98,114 +85,6 @@ async def download_makeself_distribution(
 
 class MakeselfTool(DownloadedExternalTool):
     """The Makeself tool."""
-
-
-@dataclass(frozen=True)
-class RunMakeselfArchive:
-    exe: str
-    input_digest: Digest
-    description: str
-    level: LogLevel = LogLevel.INFO
-    output_directory: Optional[str] = None
-
-
-@dataclass(frozen=True)
-class RunMakeselfArthiveProcess(Process):
-    pass
-
-
-@rule(desc="Run makeself archive", level=LogLevel.DEBUG)
-async def run_makeself_archive(
-    request: RunMakeselfArchive,
-    awk: AwkBinary,
-    base64: Base64Binary,
-    basename: BasenameBinary,
-    bash: BashBinary,
-    bzip2: Bzip2Binary,
-    cat: CatBinary,
-    cut: CutBinary,
-    dd: DdBinary,
-    df: DfBinary,
-    dirname: DirnameBinary,
-    expr: ExprBinary,
-    find: FindBinary,
-    gpg: GpgBinary,
-    gzip: GzipBinary,
-    head: HeadBinary,
-    id: IdBinary,
-    md5sum: Md5sumBinary,
-    mkdir: MkdirBinary,
-    pwd: PwdBinary,
-    rm: RmBinary,
-    sed: SedBinary,
-    shasum: DateBinary,
-    tail: TailBinary,
-    tar: TarBinary,
-    test: TestBinary,
-    wc: WcBinary,
-    xz: XzBinary,
-    zstd: ZstdBinary,
-) -> Process:
-    shims = await Get(
-        BinaryShims,
-        BinaryShimsRequest(
-            paths=(
-                awk,
-                base64,
-                basename,
-                bash,
-                bzip2,
-                cat,
-                cut,
-                dd,
-                df,
-                dirname,
-                expr,
-                find,
-                gpg,
-                gzip,
-                head,
-                id,
-                md5sum,
-                mkdir,
-                pwd,
-                rm,
-                sed,
-                shasum,
-                tail,
-                tar,
-                test,
-                wc,
-                xz,
-                zstd,
-            ),
-            rationale="run makeself archive",
-        ),
-    )
-    output_directories = []
-    argv = [
-        request.exe,
-        "--accept",
-        "--noprogress",
-        "--nox11",
-        "--nochown",
-        "--nodiskspace",
-        "--quiet",
-    ]
-
-    if output_directory := request.output_directory:
-        output_directories = [output_directory]
-        argv.extend(["--keep", "--target", request.output_directory])
-
-    return Process(
-        argv=argv,
-        input_digest=request.input_digest,
-        immutable_input_digests=shims.immutable_input_digests,
-        output_directories=output_directories,
-        description=request.description,
-        level=request.level,
-        env={"PATH": shims.path_component},
-    )
 
 
 @rule(desc="Extract makeself distribution", level=LogLevel.DEBUG)

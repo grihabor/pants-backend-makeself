@@ -1,14 +1,16 @@
 import pytest
-from pants_backend_makeself import makeself
-from pants_backend_makeself import system_binaries as makeself_system_binaries
-from pants_backend_makeself.goals import package, run
-from pants_backend_makeself.goals.package import BuiltMakeselfArchiveArtifact, MakeselfArchiveFieldSet
-from pants_backend_makeself.makeself import RunMakeselfArchive
-from pants_backend_makeself.target_types import MakeselfArchiveTarget
 from pants.core.goals.package import BuiltPackage
 from pants.engine.addresses import Address
 from pants.engine.process import ProcessResult
 from pants.testutil.rule_runner import PYTHON_BOOTSTRAP_ENV, QueryRule, RuleRunner
+from pants_backend_makeself import makeself, system_binaries, util_rules
+from pants_backend_makeself.goals import package, run
+from pants_backend_makeself.goals.package import (
+    BuiltMakeselfArchiveArtifact,
+    MakeselfArchiveFieldSet,
+)
+from pants_backend_makeself.makeself import RunMakeselfArchive
+from pants_backend_makeself.target_types import MakeselfArchiveTarget
 
 
 @pytest.fixture
@@ -18,10 +20,11 @@ def rule_runner() -> RuleRunner:
             MakeselfArchiveTarget,
         ],
         rules=[
-            *makeself_system_binaries.rules(),
+            *makeself.rules(),
             *package.rules(),
             *run.rules(),
-            *makeself.rules(),
+            *system_binaries.rules(),
+            *util_rules.rules(),
             QueryRule(BuiltPackage, [MakeselfArchiveFieldSet]),
             QueryRule(ProcessResult, [RunMakeselfArchive]),
         ],
