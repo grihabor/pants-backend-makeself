@@ -75,31 +75,48 @@ class MakeselfSubsystem(TemplatedExternalTool):
     default_url_template = "https://github.com/megastep/makeself/releases/download/release-{version}/makeself-{version}.run"
 
 
-class MakeselfArchive(DownloadedExternalTool):
-    """The Makeself distribution."""
+class MakeselfDistribution(DownloadedExternalTool):
+    """The makeself distribution.
+
+    You can find releases here: https://github.com/megastep/makeself/releases
+    """
 
 
-@rule(desc="Download Makeself archive", level=LogLevel.DEBUG)
-async def download_makeself_archive(
+@rule(desc="Download makeself distribution", level=LogLevel.DEBUG)
+async def download_makeself_distribution(
     options: MakeselfSubsystem,
     platform: Platform,
-) -> MakeselfArchive:
+) -> MakeselfDistribution:
     tool = await Get(
         DownloadedExternalTool,
         ExternalToolRequest,
         options.get_request(platform),
     )
     logger.debug("makeself external tool: %s", tool)
-    return MakeselfArchive(digest=tool.digest, exe=tool.exe)
+    return MakeselfDistribution(digest=tool.digest, exe=tool.exe)
 
 
 class MakeselfTool(DownloadedExternalTool):
     """The Makeself tool."""
 
 
-@rule(desc="Extract Makeself archive", level=LogLevel.DEBUG)
-async def extract_makeself_archive(
-    dist: MakeselfArchive,
+@dataclass(frozen=True)
+class RunMakeselfArchive:
+    exe: str
+    input_digest: Digest
+    description: str
+    level: LogLevel = LogLevel.INFO
+    output_directory: Optional[str] = None
+
+
+@dataclass(frozen=True)
+class RunMakeselfArthiveProcess(Process):
+    pass
+
+
+@rule(desc="Run makeself archive", level=LogLevel.DEBUG)
+async def run_makeself_archive(
+    request: RunMakeselfArchive,
     awk: AwkBinary,
     base64: Base64Binary,
     basename: BasenameBinary,
@@ -127,8 +144,7 @@ async def extract_makeself_archive(
     wc: WcBinary,
     xz: XzBinary,
     zstd: ZstdBinary,
-) -> MakeselfTool:
-    out = "__makeself"
+) -> Process:
     shims = await Get(
         BinaryShims,
         BinaryShimsRequest(
@@ -164,31 +180,49 @@ async def extract_makeself_archive(
             rationale="extract makeself archive",
         ),
     )
+    output_directories = []
     argv = [
-        dist.exe,
+        request.exe,
         "--accept",
         "--noprogress",
         "--nox11",
         "--nochown",
         "--nodiskspace",
         "--keep",
-        "--target",
-        out,
     ]
+
+    if output_directory := request.output_directory:
+        output_directories = [output_directory]
+        argv.extend(["--target", request.output_directory])
+
+    return Process(
+        argv=[bash.path] + argv,
+        input_digest=request.input_digest,
+        immutable_input_digests=shims.immutable_input_digests,
+        output_directories=output_directories,
+        description=request.description,
+        level=request.level,
+        env={"PATH": shims.path_component},
+    )
+
+
+@rule(desc="Extract makeself distribution", level=LogLevel.DEBUG)
+async def extract_makeself_distribution(
+    dist: MakeselfDistribution,
+) -> MakeselfTool:
+    out = "__makeself"
     result = await Get(
         ProcessResult,
-        Process(
-            [bash.path] + argv,
+        RunMakeselfArchive(
+            exe=dist.exe,
             input_digest=dist.digest,
-            immutable_input_digests=shims.immutable_input_digests,
-            output_directories=[out, "tmp"],
+            output_directory=out,
             description=f"Extracting Makeself archive: {out}",
             level=LogLevel.DEBUG,
-            env={"PATH": shims.path_component},
         ),
     )
-    result = await Get(Digest, RemovePrefix(result.output_digest, out))
-    return MakeselfTool(digest=result, exe="makeself.sh")
+    digest = await Get(Digest, RemovePrefix(result.output_digest, out))
+    return MakeselfTool(digest=digest, exe="makeself.sh")
 
 
 @dataclass(frozen=True)
@@ -234,7 +268,7 @@ class MakeselfProcess:
 
 
 @rule
-async def makeself_process(
+async def create_makeself_archive(
     request: MakeselfProcess,
     makeself: MakeselfTool,
     awk: AwkBinary,
@@ -284,7 +318,7 @@ async def makeself_process(
                 chmod,
                 xargs,
             ),
-            rationale="create makeself binary",
+            rationale="create makeself archive",
         ),
     )
     tooldir = "__makeself"
@@ -295,7 +329,7 @@ async def makeself_process(
         request.label,
         os.path.join(os.curdir, request.startup_script),
     )
-    return Process(
+    process = Process(
         argv,
         input_digest=request.input_digest,
         immutable_input_digests={
@@ -310,6 +344,7 @@ async def makeself_process(
         cache_scope=request.cache_scope or ProcessCacheScope.SUCCESSFUL,
         timeout_seconds=request.timeout_seconds,
     )
+    return process
 
 
 def rules():

@@ -1,5 +1,4 @@
 import logging
-import os.path
 from dataclasses import dataclass
 from pathlib import PurePath
 
@@ -8,7 +7,9 @@ from makeself.pants.target_types import (
     MakeselfArchiveFilesField,
     MakeselfArchivePackagesField,
     MakeselfArchiveStartupScript,
+    MakeselfArthiveLabel,
 )
+from pants.core.goals import package
 from pants.core.goals.package import (
     BuiltPackage,
     BuiltPackageArtifact,
@@ -17,6 +18,7 @@ from pants.core.goals.package import (
     PackageFieldSet,
 )
 from pants.core.target_types import FileSourceField
+from pants.core.util_rules import source_files
 from pants.core.util_rules.source_files import SourceFiles, SourceFilesRequest
 from pants.engine.addresses import UnparsedAddressInputs
 from pants.engine.fs import Digest, MergeDigests
@@ -32,6 +34,7 @@ from pants.engine.target import (
     Targets,
 )
 from pants.engine.unions import UnionRule
+from pants.util.logging import LogLevel
 
 logger = logging.getLogger(__name__)
 
@@ -51,6 +54,7 @@ class MakeselfArchivePackageFieldSet(PackageFieldSet):
     required_fields = (MakeselfArchiveStartupScript,)
 
     startup_script: MakeselfArchiveStartupScript
+    label: MakeselfArthiveLabel
     files: MakeselfArchiveFilesField
     packages: MakeselfArchivePackagesField
     output_path: OutputPathField
@@ -88,7 +92,7 @@ async def package_makeself_binary(
     )
 
     startup_script = await Get(SourceFiles, SourceFilesRequest([field_set.startup_script]))
-    assert len(startup_script.files) == 1
+    assert len(startup_script.files) == 1, startup_script.files
 
     input_digest = await Get(
         Digest,
@@ -102,23 +106,26 @@ async def package_makeself_binary(
     )
     input_digest = await Get(Digest, AddPrefix(input_digest, archive_dir))
 
-    output_filename = PurePath(field_set.output_path.value_or_default(file_ending="run"))
-    startup_script_filename = os.path.basename(startup_script.files[0])
+    output_path = PurePath(field_set.output_path.value_or_default(file_ending="run"))
+    output_filename = output_path.name
+    startup_script_filename = startup_script.files[0]
     result = await Get(
         ProcessResult,
         MakeselfProcess,
         MakeselfProcess.new(
             archive_dir=archive_dir,
-            file_name=output_filename.name,
-            label="name of the archive",
+            file_name=output_filename,
+            label=field_set.label.value or output_filename,
             startup_script=startup_script_filename,
             input_digest=input_digest,
-            output_filename=str(output_filename),
+            output_filename=output_filename,
             description=f"Packaging Makeself binary: {field_set.address}",
+            level=LogLevel.DEBUG,
         ),
     )
-    digest = await Get(Digest, AddPrefix(result.output_digest, str(output_filename.parent)))
+    digest = await Get(Digest, AddPrefix(result.output_digest, str(output_path.parent)))
     snapshot = await Get(Snapshot, Digest, digest)
+    assert len(snapshot.files) == 1, snapshot
 
     return BuiltPackage(
         snapshot.digest,
@@ -129,5 +136,7 @@ async def package_makeself_binary(
 def rules():
     return [
         *collect_rules(),
+        *package.rules(),
+        *source_files.rules(),
         UnionRule(PackageFieldSet, MakeselfArchivePackageFieldSet),
     ]

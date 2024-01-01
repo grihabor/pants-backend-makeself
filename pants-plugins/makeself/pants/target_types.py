@@ -3,17 +3,22 @@ from pants.engine.target import (
     COMMON_TARGET_FIELDS,
     SingleSourceField,
     SpecialCasedDependencies,
+    StringField,
     Target,
 )
 from pants.util.docutil import bin_name
 from pants.util.strutil import help_text
 
 
+class MakeselfArthiveLabel(StringField):
+    alias = "label"
+
+
 class MakeselfArchiveStartupScript(SingleSourceField):
     alias = "startup_script"
     help = help_text(
         """
-        Set the startup script, i.e. what gets run when executing `./my_binary.run`,
+        Set the startup script, i.e. what gets run when executing `./my_archive.run`,
         to an address of shell source or a target that can be packaged, e.g. `pex_binary`.
         """
     )
@@ -63,6 +68,7 @@ class MakeselfArchiveOutputPath(OutputPathField):
 class MakeselfArchiveTarget(Target):
     alias = "makeself_archive"
     core_fields = (
+        MakeselfArthiveLabel,
         MakeselfArchiveStartupScript,
         MakeselfArchiveFilesField,
         MakeselfArchivePackagesField,
@@ -71,6 +77,7 @@ class MakeselfArchiveTarget(Target):
     )
     help = help_text(
         """
-        Self-extractable archive on Unix using [makeself](https://github.com/megastep/makeself) tool.
+        Self-extractable archive on Unix using [makeself](https://github.com/megastep/makeself)
+        tool.
         """
     )
